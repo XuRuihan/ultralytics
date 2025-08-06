@@ -1,0 +1,14 @@
+from ultralytics import YOLO
+
+
+model = YOLO('yolo11n.yaml')
+model.fuse()
+
+model = YOLO('yolo14n.yaml')
+model.fuse()
+
+model = YOLO('yolo15n.yaml')
+model.fuse()
+
+model = YOLO('yolo16n.yaml')
+model.fuse()
