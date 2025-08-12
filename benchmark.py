@@ -7,8 +7,11 @@ model.fuse()
 model = YOLO('yolo14n.yaml')
 model.fuse()
 
+model = YOLO('yolo142n.yaml')
+model.fuse()
+
 model = YOLO('yolo15n.yaml')
 model.fuse()
 
-model = YOLO('yolo16n.yaml')
+model = YOLO('yolo151n.yaml')
 model.fuse()
