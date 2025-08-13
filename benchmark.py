@@ -4,10 +4,10 @@ from ultralytics import YOLO
 model = YOLO('yolo11n.yaml')
 model.fuse()
 
-model = YOLO('yolo14n.yaml')
+model = YOLO('yolo142n.yaml')
 model.fuse()
 
-model = YOLO('yolo142n.yaml')
+model = YOLO('yolo143n.yaml')
 model.fuse()
 
 model = YOLO('yolo15n.yaml')

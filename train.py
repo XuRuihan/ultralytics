@@ -1,13 +1,13 @@
 from ultralytics import YOLO
 
 
-model = YOLO('yolo142n.yaml')
+model = YOLO('yolo143n.yaml')
 
 # Train the model
 results = model.train(
   data='coco.yaml',
   epochs=600, 
-  batch=232,
+  batch=8,
   imgsz=640,
   scale=0.5,  # S:0.9; M:0.9; L:0.9; X:0.9
   mosaic=1.0,
