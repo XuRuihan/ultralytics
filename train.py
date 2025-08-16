@@ -1,7 +1,11 @@
 from ultralytics import YOLO
 
 
+<<<<<<< HEAD
 model = YOLO('yolo151n.yaml')
+=======
+model = YOLO('yolo143s.yaml')
+>>>>>>> f9eff55b298ba38f127263530bdfaedc3641389c
 
 # Train the model
 results = model.train(
