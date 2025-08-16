@@ -1,13 +1,13 @@
 from ultralytics import YOLO
 
 
-model = YOLO('/home/xsh/YOLO/ultralytics/runs/detect/train/weights/epoch340.pt')
+model = YOLO('yolo151n.yaml')
 
 # Train the model
 results = model.train(
   data='coco.yaml',
   epochs=600, 
-  batch=224,
+  batch=256,
   imgsz=640,
   scale=0.5,  # S:0.9; M:0.9; L:0.9; X:0.9
   mosaic=1.0,
