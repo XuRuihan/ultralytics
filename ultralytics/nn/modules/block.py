@@ -1126,7 +1126,7 @@ class C3k2(C2f):
     """Faster Implementation of CSP Bottleneck with 2 convolutions."""
 
     def __init__(
-        self, c1: int, c2: int, n: int = 1, c3k: bool = False, e: float = 0.5, g: int = 1, shortcut: bool = True
+        self, c1: int, c2: int, n: int = 2, c3k: bool = False, e: float = 0.5, g: int = 1, shortcut: bool = True
     ):
         """
         Initialize C3k2 module.

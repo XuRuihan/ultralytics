@@ -31,7 +31,11 @@
 
    `yolo141`的参数量对齐得不是很好。在`yolo14`基础上，使用了混合`c3nx`和`c3nx2`的结构，提升高分辨率时的通道宽度
    - 所有`c3k=False`的`c3k2`替换为`c3nx`
-
+4. `yolo144`
+   面向温州项目的模型，先前`yolo142``yolo143`都存在模型规模提升之后，层数减少的问题，可能不利于模型的scale up
+   - `yolo14`的基础上，把前两个`c3nx2`的宽度增加，和`yolo142`对齐; 
+   - `head`部分的第一个`c3nx2`块换成`c3nx`块，和`yolo142`对齐，旨在提升small物体表现
+   - 缺陷在于，FLOPs相对较大，模型体量增加时fps显著低于baseline
 
 ## 实验结果
 | Model | mAP<sub>50-95</sub> | AP<sub>small</sub> | AP<sub>medium</sub> | AP<sub>large</sub> | FPS<br><sup>3090 ONNX</sup>  | params<br><sup>(M)</sup> |FLOPs<br><sup>(B) |
