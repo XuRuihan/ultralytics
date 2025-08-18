@@ -1264,7 +1264,7 @@ class SC3NX2(nn.Module):
             c1 (int): Input channels.
             c2 (int): Output channels.
             n (int): Number of blocks.
-            c3nx (bool): Whether to use C3NX blocks.
+            c3nx (bool): Whether to use SC3NX blocks.
             e (float): Expansion ratio.
             g (int): Groups for convolutions.
             shortcut (bool): Whether to use shortcut connections.
@@ -1337,15 +1337,19 @@ class C3NX(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward pass through the CSP bottleneck with 3 convolutions."""
+<<<<<<< HEAD
         # return self.cv2((self.m(self.cv1(x)) + x))
         return self.cv2(self.m(self.cv1(x))) + x
+=======
+        return self.cv2((self.m(self.cv1(x)))) + x
+>>>>>>> f9e2c16882e0a4584b09260455550b904576012f
 
 class SC3NX(nn.Module):
     """smaller but longer c3nx"""
 
     def __init__(self, c1: int, c2: int, n: int = 2, shortcut: bool = True, g: int = 1, e: float = 1.0):
         """
-        Initialize C3NX module.
+        Initialize SC3NX module.
 
         Args:
             c1 (int): Input channels.
@@ -1366,7 +1370,7 @@ class SC3NX(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward pass through the CSP bottleneck with 3 convolutions."""
-        return self.cv2((self.m(self.cv1(x)) + x))
+        return self.cv2((self.m(self.cv1(x)))) + x
 
 class RepVGGDW(torch.nn.Module):
     """RepVGGDW is a class that represents a depth wise separable convolutional block in RepVGG architecture."""
