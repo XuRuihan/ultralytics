@@ -33,6 +33,10 @@
    - 添加长距离的连接
    - 上采样模块恢复upsample
 
+3. `yolo153`
+
+   在`yolo151`基础上进行如下改进：
+   - 换用convnextsequence2模块，使用convnext代替dense conv
 
 ## 实验结果
 | Model | mAP<sub>50-95</sub> | AP<sub>small</sub> | AP<sub>medium</sub> | AP<sub>large</sub> | FPS<br><sup>3090 ONNX</sup>  | params<br><sup>(M)</sup> |FLOPs<br><sup>(B) |
