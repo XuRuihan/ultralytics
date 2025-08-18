@@ -1,17 +1,20 @@
 from ultralytics import YOLO
 
 
-model = YOLO('yolo11n.yaml')
-model.fuse()
+for scale in ["n", "s", "m", "l", "x"]:
+    print("-" * 40 + f" Model scale: {scale} " + "-" * 40)
 
-model = YOLO('yolo14n.yaml')
-model.fuse()
+    model = YOLO(f'yolo11{scale}.yaml')
+    model.fuse()
 
-model = YOLO('yolo142n.yaml')
-model.fuse()
+    model = YOLO(f'yolo14{scale}.yaml')
+    model.fuse()
 
-model = YOLO('yolo15n.yaml')
-model.fuse()
+    model = YOLO(f'yolo142{scale}.yaml')
+    model.fuse()
 
-model = YOLO('yolo151n.yaml')
-model.fuse()
+    model = YOLO(f'yolo15{scale}.yaml')
+    model.fuse()
+
+    model = YOLO(f'yolo151{scale}.yaml')
+    model.fuse()

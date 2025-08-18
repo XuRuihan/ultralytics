@@ -1265,7 +1265,7 @@ class C3NX(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward pass through the CSP bottleneck with 3 convolutions."""
-        return self.cv2((self.m(self.cv1(x)) + x))
+        return self.cv2((self.m(self.cv1(x)))) + x
 
 
 class RepVGGDW(torch.nn.Module):

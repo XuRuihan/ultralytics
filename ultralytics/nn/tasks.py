@@ -1697,10 +1697,16 @@ def parse_model(d, ch, verbose=True):
             if m in repeat_modules:
                 args.insert(2, n)  # number of repeats
                 n = 1
-            if m is C3k2 or m is C3NX2 or m is ConvNeXtSequence or m is C3NX:  # for M/L/X sizes
+            if m is C3k2 or m is C3NX2 or m is ConvNeXtSequence:  # for M/L/X sizes
                 legacy = False
                 if scale in "mlx":
                     args[3] = True
+            if m is C3NX: # for M/L/X sizes:
+                legacy = False
+                if scale in "mlx":
+                    m = C3NX2
+                    args[3] = True
+                    args[2] += 1
             if m is A2C2f:
                 legacy = False
                 if scale in "lx":  # for L/X sizes
