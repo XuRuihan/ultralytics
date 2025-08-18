@@ -15,8 +15,8 @@
 from ultralytics import YOLO
 from ultralytics.utils.benchmarks import benchmark
 
-#benchmark(model="yolo143s.yaml", data="coco.yaml", imgsz=640, half=False, format="onnx")
-benchmark(model="yolo151m.yaml", data="coco.yaml", imgsz=640, half=False, format="onnx", device='cuda')
+benchmark(model="/home/xsh/YOLO/ultralytics/runs/detect/train2/weights/best.pt", data="coco.yaml", imgsz=640, half=False, format="onnx")
+#benchmark(model="yolo152n.yaml", data="coco.yaml", imgsz=640, half=False, format="onnx", device='cuda')
 # # Load the YOLO11 model
 # model = YOLO("yolo11n.yaml")
 

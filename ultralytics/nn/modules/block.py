@@ -1177,6 +1177,40 @@ class ConvNeXtSequence(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.cv2(self.m(self.cv1(x))) + x
 
+class ConvNeXtSequence2(nn.Module):
+    """use convnext instead of 2 dense conv"""
+
+    def __init__(
+        self, c1: int, c2: int, n: int = 1, c3: bool = False, e: float = 2.0, g: int = 1, shortcut: bool = True
+    ):
+        """
+        Initialize C3k2 module.
+
+        Args:
+            c1 (int): Input channels.
+            c2 (int): Output channels.
+            n (int): Number of blocks.
+            c3 (bool): Whether to use long-range connection like c3.
+            e (float): Expansion ratio.
+            g (int): Groups for convolutions.
+            shortcut (bool): Whether to use shortcut connections.
+        """
+        super().__init__()
+        assert c1 == c2
+        if c3:
+            self.cv1 = DWConv(c1, c1, 7, act=False)
+            self.cv2 = Conv(c1, 2*c1, 1,)
+            self.cv3 = Conv(2*c1, c2, 1, act=False)
+        else:
+            self.cv1 = nn.Identity()
+            self.cv2 = nn.Identity()
+            self.cv3 = nn.Identity()
+        self.m = nn.Sequential(*(ConvNeXt(c1, c2, shortcut, g, e=e) for _ in range(n)))
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.cv3(self.cv2(self.m(self.cv1(x)))) + x
+        # return self.cv3(self.m(self.cv2(self.cv1(x)))) + x
+
 
 class C3NX2(nn.Module):
     """Faster Implementation of CSP Bottleneck with 2 convolutions."""
@@ -1303,7 +1337,8 @@ class C3NX(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward pass through the CSP bottleneck with 3 convolutions."""
-        return self.cv2((self.m(self.cv1(x)) + x))
+        # return self.cv2((self.m(self.cv1(x)) + x))
+        return self.cv2(self.m(self.cv1(x))) + x
 
 class SC3NX(nn.Module):
     """smaller but longer c3nx"""

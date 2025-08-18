@@ -16,6 +16,9 @@ model.fuse()
 model = YOLO('yolo151n.yaml')
 model.fuse()
 
+model = YOLO('yolo152n.yaml')
+model.fuse()
+
 print("")
 
 model = YOLO('yolo11s.yaml')
@@ -31,6 +34,9 @@ model = YOLO('yolo144s.yaml')
 model.fuse()
 
 model = YOLO('yolo151s.yaml')
+model.fuse()
+
+model = YOLO('yolo152s.yaml')
 model.fuse()
 
 print("")
@@ -50,6 +56,10 @@ model.fuse()
 model = YOLO('yolo151m.yaml')
 model.fuse()
 
+model = YOLO('yolo152m.yaml')
+model.fuse()
+
+
 print("")
 
 model = YOLO('yolo11l.yaml')
@@ -67,6 +77,10 @@ model.fuse()
 model = YOLO('yolo151l.yaml')
 model.fuse()
 
+model = YOLO('yolo152l.yaml')
+model.fuse()
+
+
 print("")
 
 model = YOLO('yolo11x.yaml')
@@ -82,4 +96,7 @@ model = YOLO('yolo144x.yaml')
 model.fuse()
 
 model = YOLO('yolo151x.yaml')
+model.fuse()
+
+model = YOLO('yolo152x.yaml')
 model.fuse()

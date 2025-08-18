@@ -1,7 +1,7 @@
 from ultralytics import YOLO
 
 
-model = YOLO('/home/xsh/YOLO/ultralytics/runs/detect/train2/weights/epoch0.pt')
+model = YOLO('/home/xsh/YOLO/ultralytics/runs/detect/train2/weights/epoch520.pt')
 
 # Train the model
 results = model.train(
