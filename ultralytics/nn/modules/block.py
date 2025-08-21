@@ -9,7 +9,7 @@ import torch.nn.functional as F
 
 from ultralytics.utils.torch_utils import fuse_conv_and_bn
 
-from .conv import Conv, DWConv, GhostConv, LightConv, RepConv, autopad
+from .conv import Conv, DWConv, GhostConv, LightConv, RepConv, autopad, ConvTranspose
 from .transformer import TransformerBlock
 
 __all__ = (
@@ -52,6 +52,7 @@ __all__ = (
     "PSA",
     "SCDown",
     "TorchVision",
+    "UpsampleMerge"
 )
 
 
@@ -1266,6 +1267,38 @@ class C3NX(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward pass through the CSP bottleneck with 3 convolutions."""
         return self.cv2((self.m(self.cv1(x)))) + x
+
+
+class UpsampleMerge(nn.Module):
+    """
+    Upsample the lower resolution feature map and merge with another higher resolution feature map
+    """
+    default_act = nn.SiLU()  # default activation
+
+    def __init__(self, c1: int, c2: int, c3: int, act=True):
+        """
+        Initialize UpsampleMerge module.
+
+        Args:
+            c1 (int): Dimension of the lower resolution features
+            c2 (int): Dimension of the higher resolution features
+        """
+        super().__init__()
+        self.cv1 = ConvTranspose(c1, c3, act=False)
+        self.cv2 = Conv(c2, c3, act=False)
+        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+
+    def forward(self, x: List[torch.Tensor]):
+        """
+        Concatenate input tensors along specified dimension.
+
+        Args:
+            x (List[torch.Tensor]): List of input tensors.
+
+        Returns:
+            (torch.Tensor): Concatenated tensor.
+        """
+        return self.act(self.cv1(x[0]) + self.cv2(x[1]))
 
 
 class RepVGGDW(torch.nn.Module):

@@ -43,6 +43,7 @@ from ultralytics.nn.modules import (
     CBLinear,
     Classify,
     Concat,
+    UpsampleMerge,
     Conv,
     Conv2,
     ConvTranspose,
@@ -1727,6 +1728,11 @@ def parse_model(d, ch, verbose=True):
             args = [ch[f]]
         elif m is Concat:
             c2 = sum(ch[x] for x in f)
+        elif m is UpsampleMerge:
+            assert len(f) == 2, "`UpsampleMerge` can only deal with two input feature maps"
+            c1_0, c1_1 = ch[f[0]], ch[f[1]]
+            c2 = make_divisible(min(args[0], max_channels) * width, 8)
+            args = [c1_0, c1_1, c2, *args[1:]]
         elif m in frozenset(
             {Detect, WorldDetect, YOLOEDetect, Segment, YOLOESegment, Pose, OBB, ImagePoolingAttn, v10Detect}
         ):
