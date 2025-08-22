@@ -36,6 +36,7 @@ from ultralytics.nn.modules import (
     C3Ghost,
     C3k2,
     C3NX2,
+    HourglassConvNeXt,
     C3NX,
     ConvNeXtSequence,
     C3x,
@@ -1630,6 +1631,7 @@ def parse_model(d, ch, verbose=True):
             C2f,
             C3k2,
             C3NX2,
+            HourglassConvNeXt,
             C3NX,
             ConvNeXtSequence,
             RepNCSPELAN4,
@@ -1659,6 +1661,7 @@ def parse_model(d, ch, verbose=True):
             C2f,
             C3k2,
             C3NX2,
+            HourglassConvNeXt,
             C3NX,
             ConvNeXtSequence,
             C2fAttn,
@@ -1707,7 +1710,14 @@ def parse_model(d, ch, verbose=True):
                 if scale in "mlx":
                     m = C3NX2
                     args[3] = True
-                    args[2] += 1
+                    # args[2] += 1
+            if m is HourglassConvNeXt: # for M/L/X sizes:
+                legacy = False
+                if scale in "mlx":
+                    if len(args) <= 3:
+                        args.append([1.0, 0.6])
+                    else:
+                        args[3] = [1.0, 0.6]
             if m is A2C2f:
                 legacy = False
                 if scale in "lx":  # for L/X sizes

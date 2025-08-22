@@ -16,5 +16,5 @@ for scale in ["n", "s", "m", "l", "x"]:
     model = YOLO(f'yolo145{scale}.yaml')
     model.fuse()
 
-    model = YOLO(f'yolo146{scale}.yaml')
+    model = YOLO(f'yolo147{scale}.yaml')
     model.fuse()
