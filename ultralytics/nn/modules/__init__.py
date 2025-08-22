@@ -62,6 +62,7 @@ from .block import (
     ResNetLayer,
     SCDown,
     TorchVision,
+    UpsampleMerge,
 )
 from .conv import (
     CBAM,
@@ -119,6 +120,7 @@ __all__ = (
     "SpatialAttention",
     "CBAM",
     "Concat",
+    "UpsampleMerge",
     "TransformerLayer",
     "TransformerBlock",
     "MLPBlock",

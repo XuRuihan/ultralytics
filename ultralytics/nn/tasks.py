@@ -43,6 +43,7 @@ from ultralytics.nn.modules import (
     CBLinear,
     Classify,
     Concat,
+    UpsampleMerge,
     Conv,
     Conv2,
     ConvTranspose,
@@ -1697,10 +1698,16 @@ def parse_model(d, ch, verbose=True):
             if m in repeat_modules:
                 args.insert(2, n)  # number of repeats
                 n = 1
-            if m is C3k2 or m is C3NX2 or m is ConvNeXtSequence or m is C3NX:  # for M/L/X sizes
+            if m is C3k2 or m is C3NX2 or m is ConvNeXtSequence:  # for M/L/X sizes
                 legacy = False
                 if scale in "mlx":
                     args[3] = True
+            if m is C3NX: # for M/L/X sizes:
+                legacy = False
+                if scale in "mlx":
+                    m = C3NX2
+                    args[3] = True
+                    args[2] += 1
             if m is A2C2f:
                 legacy = False
                 if scale in "lx":  # for L/X sizes
@@ -1721,6 +1728,11 @@ def parse_model(d, ch, verbose=True):
             args = [ch[f]]
         elif m is Concat:
             c2 = sum(ch[x] for x in f)
+        elif m is UpsampleMerge:
+            assert len(f) == 2, "`UpsampleMerge` can only deal with two input feature maps"
+            c1_0, c1_1 = ch[f[0]], ch[f[1]]
+            c2 = make_divisible(min(args[0], max_channels) * width, 8)
+            args = [c1_0, c1_1, c2, *args[1:]]
         elif m in frozenset(
             {Detect, WorldDetect, YOLOEDetect, Segment, YOLOESegment, Pose, OBB, ImagePoolingAttn, v10Detect}
         ):
