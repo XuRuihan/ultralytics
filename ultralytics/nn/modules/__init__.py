@@ -64,6 +64,7 @@ from .block import (
     SCDown,
     TorchVision,
     UpsampleMerge,
+    NearUpsampleMerge
 )
 from .conv import (
     CBAM,
@@ -122,6 +123,7 @@ __all__ = (
     "CBAM",
     "Concat",
     "UpsampleMerge",
+    "NearUpsampleMerge",
     "TransformerLayer",
     "TransformerBlock",
     "MLPBlock",

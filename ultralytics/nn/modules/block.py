@@ -52,7 +52,8 @@ __all__ = (
     "PSA",
     "SCDown",
     "TorchVision",
-    "UpsampleMerge"
+    "UpsampleMerge",
+    "NearUpsampleMerge"
 )
 
 
@@ -1329,6 +1330,38 @@ class UpsampleMerge(nn.Module):
             (torch.Tensor): Concatenated tensor.
         """
         return self.act(self.cv1(x[0]) + self.cv2(x[1]))
+    
+class NearUpsampleMerge(nn.Module):
+    """
+    Upsample the lower resolution feature map and merge with another higher resolution feature map
+    """
+    default_act = nn.SiLU()  # default activation
+
+    def __init__(self, c1: int, c2: int, c3: int, act=True):
+        """
+        Initialize UpsampleMerge module.
+
+        Args:
+            c1 (int): Dimension of the lower resolution features
+            c2 (int): Dimension of the higher resolution features
+        """
+        super().__init__()
+        self.cv1 = Conv(c1, c3, act=False)
+        self.up1 = nn.Upsample(scale_factor=2, mode='nearest')
+        self.cv2 = Conv(c2, c3, act=False)
+        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+
+    def forward(self, x: List[torch.Tensor]):
+        """
+        Concatenate input tensors along specified dimension.
+
+        Args:
+            x (List[torch.Tensor]): List of input tensors.
+
+        Returns:
+            (torch.Tensor): Concatenated tensor.
+        """
+        return self.act(self.up1(self.cv1(x[0])) + self.cv2(x[1]))
 
 
 class RepVGGDW(torch.nn.Module):
