@@ -1269,6 +1269,36 @@ class C3NX(nn.Module):
         return self.cv2((self.m(self.cv1(x)))) + x
 
 
+class HourglassConvNeXt(nn.Module):
+    """An hourglass bottleneck module with customizable expansion ratios for feature extraction in neural networks."""
+
+    def __init__(self, c1: int, c2: int, n: int = 1, e: List[float] = [1.0], g: int = 1, shortcut: bool = True):
+        """
+        Initialize HourglassConvNeXt module.
+
+        Args:
+            c1 (int): Input channels.
+            c2 (int): Output channels.
+            n (int): Number of blocks.
+            e (List[float]): An list of expansion ratios for recursive hourglass block.
+            g (int): Groups for convolutions.
+            shortcut (bool): Whether to use shortcut connections.
+        """
+        super().__init__()
+        assert c1 == c2
+        c_ = int(c2 * e[0])  # hidden channels
+        self.cv1 = Conv(c1, c_, 1)
+        self.cv2 = Conv(c_, c2, 1)  # optional act=FReLU(c2)
+        if len(e) > 1:
+            self.m = nn.Sequential(*(HourglassConvNeXt(c_, c_, 2, e[1:], g, shortcut) for _ in range(n)))
+        else:
+            self.m = nn.Sequential(*(ConvNeXt(c_, c_, shortcut, g, e=2.0) for _ in range(n)))
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass through the CSP bottleneck with 3 convolutions."""
+        return self.cv2((self.m(self.cv1(x)))) + x
+
+
 class UpsampleMerge(nn.Module):
     """
     Upsample the lower resolution feature map and merge with another higher resolution feature map
