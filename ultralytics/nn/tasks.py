@@ -45,6 +45,7 @@ from ultralytics.nn.modules import (
     Classify,
     Concat,
     UpsampleMerge,
+    NearUpsampleMerge,
     Conv,
     Conv2,
     ConvTranspose,
@@ -1738,7 +1739,7 @@ def parse_model(d, ch, verbose=True):
             args = [ch[f]]
         elif m is Concat:
             c2 = sum(ch[x] for x in f)
-        elif m is UpsampleMerge:
+        elif m is UpsampleMerge or m is NearUpsampleMerge:
             assert len(f) == 2, "`UpsampleMerge` can only deal with two input feature maps"
             c1_0, c1_1 = ch[f[0]], ch[f[1]]
             c2 = make_divisible(min(args[0], max_channels) * width, 8)

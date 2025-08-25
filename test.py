@@ -16,7 +16,7 @@ from ultralytics import YOLO
 from ultralytics.utils.benchmarks import benchmark
 
 #benchmark(model="/home/xsh/YOLO/ultralytics/runs/detect/train9/weights/epoch540.pt", data="coco.yaml", imgsz=640, half=False, format="onnx")
-benchmark(model="/home/xsh/YOLO/ultralytics/runs/detect/train_yolo142n/weights/best.pt", data="coco.yaml", imgsz=640, half=False, format="onnx", device='cuda')
+benchmark(model="/home/xsh/YOLO/ultralytics/runs/detect/train_yolo147n/best.pt", data="coco.yaml", imgsz=640, half=False, format="onnx", device='cuda')
 # model = YOLO('/home/xsh/YOLO/ultralytics/runs/detect/train_yolo142n_residual/weights/last.pt')
 # model.val(data='coco.yaml', half=False, rect=False, batch=224, workers=16, amp=True, device="0,1")
 # # Load the YOLO11 model
