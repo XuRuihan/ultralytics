@@ -64,6 +64,10 @@
    
    由于几个使用转置卷积做上采样的方法效果一般，改回yolo142中最近邻上采样。由于先上采样再过卷积会产生三倍冗余计算，故仿照`UpsampleMerge`模块设计`NearUpsampleMerge`模块。
 
+8. `yolo149`
+   
+   把yolo142中的所有`C3NX2`模块中的`C3NX`部分的最后一个conv的激活函数去掉，观察是否掉点，因此观察`CSP`架构和`Hourglass`架构是否具有等价性
+
 ## 实验结果
 
 | Model | mAP<sub>50-95</sub> | AP<sub>small</sub> | AP<sub>medium</sub> | AP<sub>large</sub> | FPS<br><sup>3090 ONNX</sup>  | params<br><sup>(M)</sup> |FLOPs<br><sup>(B) |
