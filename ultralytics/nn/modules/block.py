@@ -53,6 +53,10 @@ __all__ = (
     "SCDown",
     "TorchVision",
     "UpsampleMerge",
+    "NearUpsampleMerge",
+    "C3NX_WoSilu",
+    "C3NX2_WoSilu"
+    "UpsampleMerge",
     "NearUpsampleMerge"
 )
 
@@ -1220,6 +1224,46 @@ class C3NX2(nn.Module):
         return self.cv2(torch.cat(y, 1))
 
 
+class C3NX2_WoSilu(nn.Module):
+    """Faster Implementation of CSP Bottleneck with 2 convolutions."""
+    """C3NX2 with C3NX_WoSilu"""
+    def __init__(
+        self, c1: int, c2: int, n: int = 1, c3nx: bool = False, e: float = 0.5, g: int = 1, shortcut: bool = True
+    ):
+        """
+        Initialize C3k2 module.
+
+        Args:
+            c1 (int): Input channels.
+            c2 (int): Output channels.
+            n (int): Number of blocks.
+            c3nx (bool): Whether to use C3NX blocks.
+            e (float): Expansion ratio.
+            g (int): Groups for convolutions.
+            shortcut (bool): Whether to use shortcut connections.
+        """
+        super().__init__()
+        self.c = int(c2 * e)  # hidden channels
+        self.cv1 = Conv(c1, 2 * self.c, 1, 1)
+        self.cv2 = Conv((2 + n) * self.c, c2, 1)  # optional act=FReLU(c2)
+        self.m = nn.ModuleList(
+            C3NX_WoSilu(self.c, self.c, 2, shortcut, g) if c3nx else ConvNeXt(self.c, self.c, shortcut, g, e=4.0) for _ in range(n)
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass through C2f layer."""
+        y = list(self.cv1(x).chunk(2, 1))
+        y.extend(m(y[-1]) for m in self.m)
+        return self.cv2(torch.cat(y, 1))
+
+    def forward_split(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass using split() instead of chunk()."""
+        y = self.cv1(x).split((self.c, self.c), 1)
+        y = [y[0], y[1]]
+        y.extend(m(y[-1]) for m in self.m)
+        return self.cv2(torch.cat(y, 1))
+
+
 class C3k(C3):
     """C3k is a CSP bottleneck module with customizable kernel sizes for feature extraction in neural networks."""
 
@@ -1263,6 +1307,33 @@ class C3NX(nn.Module):
         c_ = int(c2 * e)  # hidden channels
         self.cv1 = Conv(c1, c_, 1, 1)
         self.cv2 = Conv(c_, c2, 1)  # optional act=FReLU(c2)
+        self.m = nn.Sequential(*(ConvNeXt(c_, c_, shortcut, g, e=2.0) for _ in range(n)))
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass through the CSP bottleneck with 3 convolutions."""
+        return self.cv2((self.m(self.cv1(x)))) + x
+
+class C3NX_WoSilu(nn.Module):
+    """C3NX is a CSP bottleneck module with customizable kernel sizes for feature extraction in neural networks."""
+    """delete the silu of last conv"""
+    def __init__(self, c1: int, c2: int, n: int = 1, shortcut: bool = True, g: int = 1, e: float = 1.0):
+        """
+        Initialize C3NX module.
+
+        Args:
+            c1 (int): Input channels.
+            c2 (int): Output channels.
+            n (int): Number of Bottleneck blocks.
+            shortcut (bool): Whether to use shortcut connections.
+            g (int): Groups for convolutions.
+            e (float): Expansion ratio.
+            k (int): Kernel size.
+        """
+        super().__init__()
+        assert c1 == c2
+        c_ = int(c2 * e)  # hidden channels
+        self.cv1 = Conv(c1, c_, 1, 1)
+        self.cv2 = Conv(c_, c2, 1, act=False)  # optional act=FReLU(c2)
         self.m = nn.Sequential(*(ConvNeXt(c_, c_, shortcut, g, e=2.0) for _ in range(n)))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

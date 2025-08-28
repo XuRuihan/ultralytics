@@ -38,6 +38,8 @@ from ultralytics.nn.modules import (
     C3NX2,
     HourglassConvNeXt,
     C3NX,
+    C3NX_WoSilu,
+    C3NX2_WoSilu,
     ConvNeXtSequence,
     C3x,
     CBFuse,
@@ -1632,8 +1634,10 @@ def parse_model(d, ch, verbose=True):
             C2f,
             C3k2,
             C3NX2,
+            C3NX2_WoSilu,
             HourglassConvNeXt,
             C3NX,
+            C3NX_WoSilu,
             ConvNeXtSequence,
             RepNCSPELAN4,
             ELAN1,
@@ -1662,8 +1666,10 @@ def parse_model(d, ch, verbose=True):
             C2f,
             C3k2,
             C3NX2,
+            C3NX2_WoSilu,
             HourglassConvNeXt,
             C3NX,
+            C3NX_WoSilu,
             ConvNeXtSequence,
             C2fAttn,
             C3,
@@ -1702,11 +1708,11 @@ def parse_model(d, ch, verbose=True):
             if m in repeat_modules:
                 args.insert(2, n)  # number of repeats
                 n = 1
-            if m is C3k2 or m is C3NX2 or m is ConvNeXtSequence:  # for M/L/X sizes
+            if m is C3k2 or m is C3NX2 or m is ConvNeXtSequence or m is C3NX2_WoSilu:  # for M/L/X sizes
                 legacy = False
                 if scale in "mlx":
                     args[3] = True
-            if m is C3NX: # for M/L/X sizes:
+            if m is C3NX or m is C3NX_WoSilu: # for M/L/X sizes:
                 legacy = False
                 if scale in "mlx":
                     m = C3NX2

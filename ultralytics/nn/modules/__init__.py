@@ -64,7 +64,9 @@ from .block import (
     SCDown,
     TorchVision,
     UpsampleMerge,
-    NearUpsampleMerge
+    NearUpsampleMerge,
+    C3NX_WoSilu,
+    C3NX2_WoSilu,
 )
 from .conv import (
     CBAM,
@@ -191,4 +193,6 @@ __all__ = (
     "TorchVision",
     "Index",
     "A2C2f",
+    "C3NX_WoSilu",
+    "C3NX2_WoSilu",
 )
