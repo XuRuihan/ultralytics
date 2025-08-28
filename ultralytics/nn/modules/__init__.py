@@ -67,6 +67,12 @@ from .block import (
     NearUpsampleMerge,
     C3NX_WoSilu,
     C3NX2_WoSilu,
+    ExtraDepthWise,
+    ExtraDepthWise_1,
+    ExtraDepthWise_2,
+    HourglassExtraDW,
+    HourglassExtraDW_1,
+    HourglassExtraDW_2,
 )
 from .conv import (
     CBAM,
@@ -195,4 +201,10 @@ __all__ = (
     "A2C2f",
     "C3NX_WoSilu",
     "C3NX2_WoSilu",
+    "ExtraDepthWise",
+    "ExtraDepthWise_1",
+    "ExtraDepthWise_2",
+    "HourglassExtraDW",
+    "HourglassExtraDW_1",
+    "HourglassExtraDW_2",
 )
