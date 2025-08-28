@@ -21,8 +21,14 @@ from ultralytics.utils.benchmarks import ProfileModels
 
 # benchmark(model="/home/xsh/yolo11n.pt", data="coco.yaml", imgsz=640, half=True, format="engine", device='cuda')
 # profiler = ProfileModels(["yolo12n.yaml", "yolo142n.yaml", "yolo11n.yaml", "yolo14n.yaml", "yolo145n.yaml", "yolo146n.yaml", "yolo147n.yaml", "yolo148n.yaml", "yolo1471n.yaml"], imgsz=640, device='cuda:1')
-profiler = ProfileModels(["yolo15n.yaml", "yolo151n.yaml"], imgsz=640, device='cuda')
+
+profiler = ProfileModels(["yolo147n.yaml", "yolo1471n.yaml", "yolo1472n.yaml", "yolo1473n.yaml"], imgsz=640, device='cuda')
 profiler.run()
+
+# model = YOLO("yolo1471.yaml")
+# model.fuse()
+# model = YOLO("yolo147.yaml")
+# model.fuse()
 
 # model = YOLO('/home/xsh/YOLO/ultralytics/runs/detect/train_yolo142n_residual/weights/last.pt')
 # model.val(data='coco.yaml', half=False, rect=False, batch=224, workers=16, amp=True, device="0,1")
