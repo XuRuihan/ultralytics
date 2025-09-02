@@ -37,6 +37,7 @@ from ultralytics.nn.modules import (
     C3k2,
     C3NX2,
     HourglassConvNeXt,
+    HourglassConvNeXt_Depth, 
     C3NX,
     C3NX_WoSilu,
     C3NX2_WoSilu,
@@ -82,6 +83,9 @@ from ultralytics.nn.modules import (
     HourglassExtraDW,
     HourglassExtraDW_1,
     HourglassExtraDW_2,
+    MobileInvertBottleneck,
+    HourglassInvertBottleneck,
+    HourglassConvNeXt_WoSilu,
 )
 from ultralytics.utils import DEFAULT_CFG_DICT, DEFAULT_CFG_KEYS, LOGGER, YAML, colorstr, emojis
 from ultralytics.utils.checks import check_requirements, check_suffix, check_yaml
@@ -1642,9 +1646,12 @@ def parse_model(d, ch, verbose=True):
             C3NX2,
             C3NX2_WoSilu,
             HourglassConvNeXt,
+            HourglassConvNeXt_Depth,
             HourglassExtraDW,
             HourglassExtraDW_1,
             HourglassExtraDW_2,
+            HourglassInvertBottleneck,
+            HourglassConvNeXt_WoSilu,
             C3NX,
             C3NX_WoSilu,
             ConvNeXtSequence,
@@ -1677,9 +1684,12 @@ def parse_model(d, ch, verbose=True):
             C3NX2,
             C3NX2_WoSilu,
             HourglassConvNeXt,
+            HourglassConvNeXt_Depth,
             HourglassExtraDW,
             HourglassExtraDW_1,
             HourglassExtraDW_2,
+            HourglassInvertBottleneck,
+            HourglassConvNeXt_WoSilu,
             C3NX,
             C3NX_WoSilu,
             ConvNeXtSequence,
@@ -1730,7 +1740,7 @@ def parse_model(d, ch, verbose=True):
                     m = C3NX2
                     args[3] = True
                     # args[2] += 1
-            if m is HourglassConvNeXt or m is HourglassExtraDW or m is HourglassExtraDW_1 or m is HourglassExtraDW_2: # for M/L/X sizes:
+            if m is HourglassConvNeXt or m is HourglassExtraDW or m is HourglassExtraDW_1 or m is HourglassExtraDW_2 or m is HourglassInvertBottleneck or m is HourglassConvNeXt_WoSilu or m is HourglassConvNeXt_Depth: # for M/L/X sizes:
                 legacy = False
                 if scale in "mlx":
                     if len(args) <= 3:

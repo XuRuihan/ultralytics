@@ -45,6 +45,7 @@ from .block import (
     C3k2,
     C3NX2,
     HourglassConvNeXt,
+    HourglassConvNeXt_Depth,
     C3NX,
     ConvNeXtSequence,
     C3x,
@@ -73,6 +74,9 @@ from .block import (
     HourglassExtraDW,
     HourglassExtraDW_1,
     HourglassExtraDW_2,
+    MobileInvertBottleneck,
+    HourglassInvertBottleneck,
+    HourglassConvNeXt_WoSilu,
 )
 from .conv import (
     CBAM,
@@ -148,6 +152,7 @@ __all__ = (
     "C3k2",
     "C3NX2",
     "HourglassConvNeXt",
+    "HourglassConvNeXt_Depth",
     "C3NX",
     "ConvNeXtSequence",
     "SCDown",
@@ -207,4 +212,7 @@ __all__ = (
     "HourglassExtraDW",
     "HourglassExtraDW_1",
     "HourglassExtraDW_2",
+    "MobileInvertBottleneck",
+    "HourglassInvertBottleneck",
+    "HourglassConvNeXt_WoSilu",
 )

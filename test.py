@@ -14,9 +14,23 @@
 
 from ultralytics import YOLO
 from ultralytics.utils.benchmarks import benchmark
+from ultralytics.utils.benchmarks import ProfileModels
 
 #benchmark(model="/home/xsh/YOLO/ultralytics/runs/detect/train9/weights/epoch540.pt", data="coco.yaml", imgsz=640, half=False, format="onnx")
-benchmark(model="/home/xsh/YOLO/ultralytics/runs/detect/train_yolo142n/weights/best.pt", data="coco.yaml", imgsz=640, half=False, format="onnx", device='cuda')
+# benchmark(model="yolo142n.yaml", data="coco.yaml", imgsz=640, half=False, format="onnx", device='cuda')
+
+# benchmark(model="/home/xsh/yolo11n.pt", data="coco.yaml", imgsz=640, half=True, format="engine", device='cuda')
+# profiler = ProfileModels(["yolo12n.yaml", "yolo142n.yaml", "yolo11n.yaml", "yolo14n.yaml", "yolo145n.yaml", "yolo146n.yaml", "yolo147n.yaml", "yolo148n.yaml", "yolo1471n.yaml"], imgsz=640, device='cuda:1')
+
+# profiler = ProfileModels(["yolo147.yaml", "yolo11n.yaml", "yolo12n.yaml", "yolo142n.yaml", "yolo145n.yaml","yolo146n.yaml", "yolo1471n.yaml", "yolo1472n.yaml", "yolo1473n.yaml", "yolo148.yaml", "yolo149.yaml"], imgsz=640, device='cuda:6')
+profiler = ProfileModels(["yolo1475.yaml", "yolo1476.yaml", "yolo11.yaml", "yolo147.yaml"], imgsz=640, device='cuda')
+profiler.run()
+
+# model = YOLO("yolo1471.yaml")
+# model.fuse()
+# model = YOLO("yolo147.yaml")
+# model.fuse()
+
 # model = YOLO('/home/xsh/YOLO/ultralytics/runs/detect/train_yolo142n_residual/weights/last.pt')
 # model.val(data='coco.yaml', half=False, rect=False, batch=224, workers=16, amp=True, device="0,1")
 # # Load the YOLO11 model

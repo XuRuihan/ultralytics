@@ -68,6 +68,18 @@
    
    把yolo142中的所有`C3NX2`模块中的`C3NX`部分的最后一个conv的激活函数去掉，观察是否掉点，因此观察`CSP`架构和`Hourglass`架构是否具有等价性
 
+9. `yolo1474`
+   
+   把yolo147中的所有`ConvNeXt`模块改成`MobileInvertedBottleneck`,预期表达能力会更强，但速度会慢
+
+10. `yolo1475`
+   
+   把yolo147中的所有`HourGlasssConvNeXt`模块改成中的最后一个`Conv1*1`去掉非线性层，预期速度提高，效果更好（后期可能改成一个迭代的convnext架构）
+
+10. `yolo1476`
+   
+   把yolo147中的所有`HourGlasssConvNeXt`模块的旁支加上`DWConv 3*3`，预期通过提高感受野来提升效果
+
 ## 实验结果
 
 | Model | mAP<sub>50-95</sub> | AP<sub>small</sub> | AP<sub>medium</sub> | AP<sub>large</sub> | FPS<br><sup>3090 ONNX</sup>  | params<br><sup>(M)</sup> |FLOPs<br><sup>(B) |
