@@ -76,7 +76,11 @@ from .block import (
     HourglassExtraDW_2,
     MobileInvertBottleneck,
     HourglassInvertBottleneck,
+    HourglassStarBlock,
+    StarBlock,
     HourglassConvNeXt_WoSilu,
+    HourglassNativeStarBlock,
+    NativeStarBlock,
 )
 from .conv import (
     CBAM,
@@ -93,6 +97,7 @@ from .conv import (
     LightConv,
     RepConv,
     SpatialAttention,
+    MobileConv,
 )
 from .head import (
     OBB,
@@ -215,4 +220,9 @@ __all__ = (
     "MobileInvertBottleneck",
     "HourglassInvertBottleneck",
     "HourglassConvNeXt_WoSilu",
+    "HourglassStarBlock",
+    "StarBlock",
+    "MobileConv",
+    "HourglassNativeStarBlock",
+    "NativeStarBlock",
 )

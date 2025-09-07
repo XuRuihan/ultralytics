@@ -9,7 +9,7 @@ import torch.nn.functional as F
 
 from ultralytics.utils.torch_utils import fuse_conv_and_bn
 
-from .conv import Conv, DWConv, GhostConv, LightConv, RepConv, autopad, ConvTranspose
+from .conv import Conv, DWConv, GhostConv, LightConv, RepConv, autopad, ConvTranspose, MobileConv
 from .transformer import TransformerBlock
 
 __all__ = (
@@ -66,6 +66,11 @@ __all__ = (
     "HourglassExtraDW_2",
     "MobileInvertBottleneck",
     "HourglassInvertBottleneck",
+    "HourglassStarBlock",
+    "HourglassNativeStarBlock",
+    "NativeStarBlock",
+    "StarBlock",
+    "MobileConv",
 )
 
 
@@ -518,7 +523,7 @@ class ConvNeXt(nn.Module):
         assert c1 == c2, "Cannot assign ConvNeXt with different in/out channels"
         assert g == 1, "Do not allow grouped convolution"
         c_ = int(c2 * e)
-        self.cv1 = DWConv(c1, c1, 3, act=False)
+        self.cv1 = DWConv(c1, c1, 7, act=False)
         self.cv2 = Conv(c1, c_, 1,)
         self.cv3 = Conv(c_, c2, 1, act=False)
 
@@ -526,6 +531,26 @@ class ConvNeXt(nn.Module):
         """Apply convnext"""
         return x + self.cv3(self.cv2(self.cv1(x)))
 
+
+
+# class StarBlock(nn.Module):
+#     """Basic block from Rewrite the stars"""
+#     def __init__(
+#         self, c1: int, c2: int, shortcut: bool = True, g: int = 1, k: Tuple[int, int] = (1, 1), e: float = 1.0
+#     ):
+#         super().__init__()
+#         assert c1 == c2, "Cannot assign ConvNeXt with different in/out channels"
+#         assert g == 1, "Do not allow grouped convolution"
+#         c_ = int(c2 * e)
+#         self.cv1 = DWConv(c1, c1, 3)
+#         self.cv2 = Conv(c1, c_, 1, act=False)
+#         self.cv3 = Conv(c_//2, c2, 1, act=False)
+#         self.silu6 = lambda x: torch.clamp(nn.SiLU()(x), max=6.0)
+
+#     def forward(self, x: torch.Tensor) -> torch.Tensor:
+#         """Apply convnext"""
+#         y1, y2 = self.cv2(self.cv1(x)).chunk(2, dim=1)
+#         return x + self.cv3(self.silu6(y1) * y2)
 
 class StarBlock(nn.Module):
     """Basic block from Rewrite the stars"""
@@ -536,16 +561,48 @@ class StarBlock(nn.Module):
         assert c1 == c2, "Cannot assign ConvNeXt with different in/out channels"
         assert g == 1, "Do not allow grouped convolution"
         c_ = int(c2 * e)
-        self.cv1 = DWConv(c1, c1, 3, act=False)
-        self.cv2 = Conv(c1, c_, 1, act=False)
-        self.cv3 = Conv(c_, c2, 1, act=False)
-        self.act = nn.Silu()
+        self.cv1 = DWConv(c1, c1, 7, act=False)
+        self.cv2 = nn.Conv2d(c1, c_, 1, 1)
+        self.cv3 = Conv(c_//2, c2, 1, act=False)
+
+    def _silu6(self, x: torch.Tensor) -> torch.Tensor:
+        """Apply SiLU activation (out-of-place) and clamp output to a maximum of 6.0"""
+        return torch.clamp(F.silu(x, inplace=False), max=6.0)
+    
+    def _silu(self, x: torch.Tensor) -> torch.Tensor:
+        return F.silu(x, inplace=False)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Apply convnext"""
         y1, y2 = self.cv2(self.cv1(x)).chunk(2, dim=1)
-        return x + self.cv3(self.act(y1) * y2)
+        return x + self.cv3(self._silu6(y1) * y2)
 
+
+class NativeStarBlock(nn.Module):
+    """Basic block from Rewrite the stars"""
+    def __init__(
+        self, c1: int, c2: int, shortcut: bool = True, g: int = 1, k: Tuple[int, int] = (1, 1), e: float = 1.0
+    ):
+        super().__init__()
+        assert c1 == c2, "Cannot assign ConvNeXt with different in/out channels"
+        assert g == 1, "Do not allow grouped convolution"
+        c_ = int(c2 * e)
+        self.cv1 = DWConv(c1, c1, 7, act=False)
+        self.cv2 = nn.Conv2d(c1, c_, 1, 1)
+        self.cv3 = Conv(c_//2, c2, 1, act=False)
+        self.cv4 = nn.Conv2d(c2, c2, 3, 1, 1, groups=c2)
+
+    def _silu6(self, x: torch.Tensor) -> torch.Tensor:
+        """Apply SiLU activation (out-of-place) and clamp output to a maximum of 6.0"""
+        return torch.clamp(F.silu(x, inplace=False), max=6.0)
+    
+    def _silu(self, x: torch.Tensor) -> torch.Tensor:
+        return F.silu(x, inplace=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Apply convnext"""
+        y1, y2 = self.cv2(self.cv1(x)).chunk(2, dim=1)
+        return x + self.cv4(self.cv3(self._silu6(y1) * y2))
 
 class MobileInvertBottleneck(nn.Module):
     """Standard Inverted bottleneck"""
@@ -1466,6 +1523,66 @@ class HourglassInvertBottleneck(nn.Module):
             self.m = nn.Sequential(*(HourglassInvertBottleneck(c_, c_, 2, e[1:], g, shortcut) for _ in range(n)))
         else:
             self.m = nn.Sequential(*(MobileInvertBottleneck(c_, c_, shortcut, g, e=2.0) for _ in range(n)))
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass through the CSP bottleneck with 3 convolutions."""
+        return self.cv2((self.m(self.cv1(x)))) + x
+
+
+class HourglassStarBlock(nn.Module):
+    """An hourglass bottleneck module with customizable expansion ratios for feature extraction in neural networks."""
+
+    def __init__(self, c1: int, c2: int, n: int = 1, e: List[float] = [1.0], g: int = 1, shortcut: bool = True):
+        """
+        Initialize HourglassInvertBottleneck module.
+
+        Args:
+            c1 (int): Input channels.
+            c2 (int): Output channels.
+            n (int): Number of blocks.
+            e (List[float]): An list of expansion ratios for recursive hourglass block.
+            g (int): Groups for convolutions.
+            shortcut (bool): Whether to use shortcut connections.
+        """
+        super().__init__()
+        assert c1 == c2
+        c_ = int(c2 * e[0])  # hidden channels
+        self.cv1 = Conv(c1, c_, 1)
+        self.cv2 = Conv(c_, c2, 1)  # optional act=FReLU(c2)
+        if len(e) > 1:
+            self.m = nn.Sequential(*(HourglassStarBlock(c_, c_, 2, e[1:], g, shortcut) for _ in range(n)))
+        else:
+            self.m = nn.Sequential(*(StarBlock(c_, c_, shortcut, g, e=2.0) for _ in range(n)))
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass through the CSP bottleneck with 3 convolutions."""
+        return self.cv2((self.m(self.cv1(x)))) + x
+
+
+class HourglassNativeStarBlock(nn.Module):
+    """An hourglass bottleneck module with customizable expansion ratios for feature extraction in neural networks."""
+
+    def __init__(self, c1: int, c2: int, n: int = 1, e: List[float] = [1.0], g: int = 1, shortcut: bool = True):
+        """
+        Initialize HourglassInvertBottleneck module.
+
+        Args:
+            c1 (int): Input channels.
+            c2 (int): Output channels.
+            n (int): Number of blocks.
+            e (List[float]): An list of expansion ratios for recursive hourglass block.
+            g (int): Groups for convolutions.
+            shortcut (bool): Whether to use shortcut connections.
+        """
+        super().__init__()
+        assert c1 == c2
+        c_ = int(c2 * e[0])  # hidden channels
+        self.cv1 = Conv(c1, c_, 1)
+        self.cv2 = Conv(c_, c2, 1)  # optional act=FReLU(c2)
+        if len(e) > 1:
+            self.m = nn.Sequential(*(HourglassNativeStarBlock(c_, c_, 2, e[1:], g, shortcut) for _ in range(n)))
+        else:
+            self.m = nn.Sequential(*(NativeStarBlock(c_, c_, shortcut, g, e=2.0) for _ in range(n)))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward pass through the CSP bottleneck with 3 convolutions."""

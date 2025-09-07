@@ -1,7 +1,7 @@
 from ultralytics import YOLO
+import torch
 
-
-model = YOLO('yolo1476n.yaml')
+model = YOLO('yolo1478n.yaml')
 
 # Train the model
 results = model.train(
@@ -13,7 +13,7 @@ results = model.train(
   mosaic=1.0,
   mixup=0.0,  # S:0.05; M:0.15; L:0.15; X:0.2
   copy_paste=0.1,  # S:0.15; M:0.4; L:0.5; X:0.6
-  device="6,7,8",
+  device="0,1,2",
   save_period=10,
   workers=16,
   resume=True,

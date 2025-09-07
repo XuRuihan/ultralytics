@@ -92,6 +92,21 @@ class Conv(nn.Module):
         return self.act(self.conv(x))
 
 
+class MobileConv(nn.Module):
+    """a depthwise plus a pointwise"""
+    def __init__(
+        self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True
+    ):
+        super().__init__()
+        assert g == 1, "Do not allow grouped convolution"
+        self.cv1 = DWConv(c1, c1, k, s)
+        self.cv2 = Conv(c1, c2, 1)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Apply convnext"""
+        return self.cv2(self.cv1(x))
+    
+
 class Conv2(Conv):
     """
     Simplified RepConv module with Conv fusing.

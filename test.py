@@ -23,7 +23,7 @@ from ultralytics.utils.benchmarks import ProfileModels
 # profiler = ProfileModels(["yolo12n.yaml", "yolo142n.yaml", "yolo11n.yaml", "yolo14n.yaml", "yolo145n.yaml", "yolo146n.yaml", "yolo147n.yaml", "yolo148n.yaml", "yolo1471n.yaml"], imgsz=640, device='cuda:1')
 
 # profiler = ProfileModels(["yolo147.yaml", "yolo11n.yaml", "yolo12n.yaml", "yolo142n.yaml", "yolo145n.yaml","yolo146n.yaml", "yolo1471n.yaml", "yolo1472n.yaml", "yolo1473n.yaml", "yolo148.yaml", "yolo149.yaml"], imgsz=640, device='cuda:6')
-profiler = ProfileModels(["yolo1475.yaml", "yolo1476.yaml", "yolo11.yaml", "yolo147.yaml"], imgsz=640, device='cuda')
+profiler = ProfileModels(["yolo1478.yaml", "yolo11.yaml"], imgsz=640, device='cuda')
 profiler.run()
 
 # model = YOLO("yolo1471.yaml")
