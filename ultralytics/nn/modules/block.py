@@ -514,10 +514,28 @@ class Bottleneck(nn.Module):
         return x + self.cv2(self.cv1(x)) if self.add else self.cv2(self.cv1(x))
 
 
+# class ConvNeXt(nn.Module):
+#     """Standard ConvNeXt"""
+#     def __init__(
+#         self, c1: int, c2: int, shortcut: bool = True, g: int = 1, k: Tuple[int, int] = (1, 1), e: float = 1.0
+#     ):
+#         super().__init__()
+#         assert c1 == c2, "Cannot assign ConvNeXt with different in/out channels"
+#         assert g == 1, "Do not allow grouped convolution"
+#         c_ = int(c2 * e)
+#         self.cv1 = DWConv(c1, c1, 7, act=False)
+#         self.cv2 = Conv(c1, c_, 1,)
+#         self.cv3 = Conv(c_, c2, 1, act=False)
+
+#     def forward(self, x: torch.Tensor) -> torch.Tensor:
+#         """Apply convnext"""
+#         return x + self.cv3(self.cv2(self.cv1(x)))
+
+
 class ConvNeXt(nn.Module):
     """Standard ConvNeXt"""
     def __init__(
-        self, c1: int, c2: int, shortcut: bool = True, g: int = 1, k: Tuple[int, int] = (1, 1), e: float = 1.0
+        self, c1: int, c2: int, shortcut: bool = True, g: int = 1, k: Tuple[int, int] = (1, 1), e: float = 1.0, init_layer_scale=1e-3
     ):
         super().__init__()
         assert c1 == c2, "Cannot assign ConvNeXt with different in/out channels"
@@ -526,11 +544,11 @@ class ConvNeXt(nn.Module):
         self.cv1 = DWConv(c1, c1, 7, act=False)
         self.cv2 = Conv(c1, c_, 1,)
         self.cv3 = Conv(c_, c2, 1, act=False)
+        self.ls = nn.Parameter(torch.full((1, c2, 1, 1), init_layer_scale))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Apply convnext"""
-        return x + self.cv3(self.cv2(self.cv1(x)))
-
+        return x + self.ls * self.cv3(self.cv2(self.cv1(x)))
 
 
 # class StarBlock(nn.Module):
@@ -1589,12 +1607,40 @@ class HourglassNativeStarBlock(nn.Module):
         return self.cv2((self.m(self.cv1(x)))) + x
     
 
+# class HourglassConvNeXt(nn.Module):
+#     """An hourglass bottleneck module with customizable expansion ratios for feature extraction in neural networks."""
+
+#     def __init__(self, c1: int, c2: int, n: int = 1, e: List[float] = [1.0], g: int = 1, shortcut: bool = True):
+#         """
+#         Initialize HourglassInvertBottleneck module.
+
+#         Args:
+#             c1 (int): Input channels.
+#             c2 (int): Output channels.
+#             n (int): Number of blocks.
+#             e (List[float]): An list of expansion ratios for recursive hourglass block.
+#             g (int): Groups for convolutions.
+#             shortcut (bool): Whether to use shortcut connections.
+#         """
+#         super().__init__()
+#         assert c1 == c2
+#         c_ = int(c2 * e[0])  # hidden channels
+#         self.cv1 = Conv(c1, c_, 1)
+#         self.cv2 = Conv(c_, c2, 1)  # optional act=FReLU(c2)
+#         if len(e) > 1:
+#             self.m = nn.Sequential(*(HourglassConvNeXt(c_, c_, 2, e[1:], g, shortcut) for _ in range(n)))
+#         else:
+#             self.m = nn.Sequential(*(ConvNeXt(c_, c_, shortcut, g, e=2.0) for _ in range(n)))
+
+#     def forward(self, x: torch.Tensor) -> torch.Tensor:
+#         """Forward pass through the CSP bottleneck with 3 convolutions."""
+#         return self.cv2((self.m(self.cv1(x)))) + x
 class HourglassConvNeXt(nn.Module):
     """An hourglass bottleneck module with customizable expansion ratios for feature extraction in neural networks."""
 
-    def __init__(self, c1: int, c2: int, n: int = 1, e: List[float] = [1.0], g: int = 1, shortcut: bool = True):
+    def __init__(self, c1: int, c2: int, n: int = 1, e: List[float] = [1.0], g: int = 1, shortcut: bool = True, init_layer_scale=1e-3):
         """
-        Initialize HourglassInvertBottleneck module.
+        Initialize HourglassConvNeXt module.
 
         Args:
             c1 (int): Input channels.
@@ -1608,7 +1654,9 @@ class HourglassConvNeXt(nn.Module):
         assert c1 == c2
         c_ = int(c2 * e[0])  # hidden channels
         self.cv1 = Conv(c1, c_, 1)
-        self.cv2 = Conv(c_, c2, 1)  # optional act=FReLU(c2)
+        self.cv2 = Conv(c_, c2, 1, act=False)  # optional act=FReLU(c2)
+        self.ls = nn.Parameter(torch.full((1, c2, 1, 1), init_layer_scale))
+        self.act = nn.SiLU() 
         if len(e) > 1:
             self.m = nn.Sequential(*(HourglassConvNeXt(c_, c_, 2, e[1:], g, shortcut) for _ in range(n)))
         else:
@@ -1616,8 +1664,7 @@ class HourglassConvNeXt(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward pass through the CSP bottleneck with 3 convolutions."""
-        return self.cv2((self.m(self.cv1(x)))) + x
-    
+        return self.act(self.ls * self.cv2((self.m(self.cv1(x))))) + x    
 
 class HourglassConvNeXt_Depth(nn.Module):
     """add 3*3 DW before eveny 1*1 conv in hourglassConvNeXt block"""

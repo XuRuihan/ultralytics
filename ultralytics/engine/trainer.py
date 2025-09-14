@@ -231,6 +231,9 @@ class BaseTrainer:
         if self.args.cos_lr:
             self.lf = one_cycle(1, self.args.lrf, self.epochs)  # cosine 1->hyp['lrf']
         else:
+            # print("not cos lr!!!!!!!!!!!!!!!", flush=True)
+            # print(f"self.lf={self.args.lrf}", flush=True)
+            # exit()
             self.lf = lambda x: max(1 - x / self.epochs, 0) * (1.0 - self.args.lrf) + self.args.lrf  # linear
         self.scheduler = optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda=self.lf)
 
@@ -843,7 +846,7 @@ class BaseTrainer:
         for module_name, module in model.named_modules():
             for param_name, param in module.named_parameters(recurse=False):
                 fullname = f"{module_name}.{param_name}" if module_name else param_name
-                if "bias" in fullname:  # bias (no decay)
+                if "bias" in fullname or "ls" in fullname:  # bias (no decay) layerscale no decay
                     g[2].append(param)
                 elif isinstance(module, bn) or "logit_scale" in fullname:  # weight (no decay)
                     # ContrastiveHead and BNContrastiveHead included here with 'logit_scale'
@@ -855,6 +858,15 @@ class BaseTrainer:
         name = {x.lower(): x for x in optimizers}.get(name.lower())
         if name in {"Adam", "Adamax", "AdamW", "NAdam", "RAdam"}:
             optimizer = getattr(optim, name, optim.Adam)(g[2], lr=lr, betas=(momentum, 0.999), weight_decay=0.0)
+            # if name == "AdamW":
+            #     print(f"AdamW Optimizer Hyperparameters for group g[2] (bias, no decay):")
+            #     print(f"  Learning Rate (lr): {optimizer.param_groups[0]['lr']}")
+            #     print(f"  Betas: {optimizer.param_groups[0]['betas']}")
+            #     print(f"  Weight Decay: {optimizer.param_groups[0]['weight_decay']}")
+            #     print(f"  Epsilon (eps): {optimizer.param_groups[0]['eps']}")
+            #     print(f"  AMSGrad: {optimizer.param_groups[0]['amsgrad']}")
+            #     print(f"  Maximize: {optimizer.param_groups[0]['maximize']}")
+            #     print(f"  Differentiable: {optimizer.param_groups[0]['differentiable']}")
         elif name == "RMSProp":
             optimizer = optim.RMSprop(g[2], lr=lr, momentum=momentum)
         elif name == "SGD":
@@ -866,6 +878,7 @@ class BaseTrainer:
             )
 
         optimizer.add_param_group({"params": g[0], "weight_decay": decay})  # add g0 with weight_decay
+        # print(f"g0 Weight Decay: {decay}")
         optimizer.add_param_group({"params": g[1], "weight_decay": 0.0})  # add g1 (BatchNorm2d weights)
         LOGGER.info(
             f"{colorstr('optimizer:')} {type(optimizer).__name__}(lr={lr}, momentum={momentum}) with parameter groups "
