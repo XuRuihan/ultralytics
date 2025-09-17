@@ -7,14 +7,14 @@ for scale in ["n", "s", "m", "l", "x"]:
     model = YOLO(f'yolo11{scale}.yaml')
     model.fuse()
 
-    model = YOLO(f'yolo147{scale}.yaml')
+    model = YOLO(f'yolo149{scale}.yaml')
     model.fuse()
 
-    model = YOLO(f'yolo1477{scale}.yaml')
+    model = YOLO(f'yolo1491{scale}.yaml')
     model.fuse()
 
-    # model = YOLO(f'yolo1478{scale}.yaml')
-    # model.fuse()
+    model = YOLO(f'yolo1492{scale}.yaml')
+    model.fuse()
 
-    model = YOLO(f'yolo1479{scale}.yaml')
+    model = YOLO(f'yolo1493{scale}.yaml')
     model.fuse()

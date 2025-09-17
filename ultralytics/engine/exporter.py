@@ -76,7 +76,7 @@ from ultralytics.data import build_dataloader
 from ultralytics.data.dataset import YOLODataset
 from ultralytics.data.utils import check_cls_dataset, check_det_dataset
 from ultralytics.nn.autobackend import check_class_names, default_class_names
-from ultralytics.nn.modules import C2f, Classify, Detect, RTDETRDecoder
+from ultralytics.nn.modules import C2f, Classify, Detect, RTDETRDecoder, Detect_ConvNeXt, Detect_IB, Detect_ExtraDW
 from ultralytics.nn.tasks import ClassificationModel, DetectionModel, SegmentationModel, WorldModel
 from ultralytics.utils import (
     ARM64,
@@ -411,7 +411,7 @@ class Exporter:
         for m in model.modules():
             if isinstance(m, Classify):
                 m.export = True
-            if isinstance(m, (Detect, RTDETRDecoder)):  # includes all Detect subclasses like Segment, Pose, OBB
+            if isinstance(m, (Detect, RTDETRDecoder, Detect_ConvNeXt, Detect_IB, Detect_ExtraDW)):  # includes all Detect subclasses like Segment, Pose, OBB
                 m.dynamic = self.args.dynamic
                 m.export = True
                 m.format = self.args.format
@@ -422,7 +422,7 @@ class Exporter:
             elif isinstance(m, C2f) and not is_tf_format:
                 # EdgeTPU does not support FlexSplitV while split provides cleaner ONNX graph
                 m.forward = m.forward_split
-            if isinstance(m, Detect) and imx:
+            if isinstance(m, (Detect, Detect_ConvNeXt, Detect_IB, Detect_ExtraDW)) and imx:
                 from ultralytics.utils.tal import make_anchors
 
                 m.anchors, m.strides = (
@@ -684,7 +684,7 @@ class Exporter:
 
             # Generate calibration data for integer quantization
             ignored_scope = None
-            if isinstance(self.model.model[-1], Detect):
+            if isinstance(self.model.model[-1], (Detect, Detect_ConvNeXt, Detect_IB, Detect_ExtraDW)):
                 # Includes all Detect subclasses like Segment, Pose, OBB, WorldDetect, YOLOEDetect
                 head_module_name = ".".join(list(self.model.named_modules())[-1][0].split(".")[:2])
                 ignored_scope = nncf.IgnoredScope(  # ignore operations

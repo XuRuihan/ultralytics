@@ -54,6 +54,9 @@ from ultralytics.nn.modules import (
     Conv2,
     ConvTranspose,
     Detect,
+    Detect_ConvNeXt,
+    Detect_ExtraDW,
+    Detect_IB,
     DWConv,
     DWConvTranspose2d,
     Focus,
@@ -313,7 +316,7 @@ class BaseModel(torch.nn.Module):
         self = super()._apply(fn)
         m = self.model[-1]  # Detect()
         if isinstance(
-            m, Detect
+            m, (Detect, Detect_ConvNeXt, Detect_ExtraDW, Detect_IB)
         ):  # includes all Detect subclasses like Segment, Pose, OBB, WorldDetect, YOLOEDetect, YOLOESegment
             m.stride = fn(m.stride)
             m.anchors = fn(m.anchors)
@@ -425,7 +428,7 @@ class DetectionModel(BaseModel):
 
         # Build strides
         m = self.model[-1]  # Detect()
-        if isinstance(m, Detect):  # includes all Detect subclasses like Segment, Pose, OBB, YOLOEDetect, YOLOESegment
+        if isinstance(m, (Detect, Detect_ConvNeXt, Detect_ExtraDW, Detect_IB)):  # includes all Detect subclasses like Segment, Pose, OBB, YOLOEDetect, YOLOESegment
             s = 256  # 2x min stride
             m.inplace = self.inplace
 
@@ -1784,12 +1787,12 @@ def parse_model(d, ch, verbose=True):
             c2 = make_divisible(min(args[0], max_channels) * width, 8)
             args = [c1_0, c1_1, c2, *args[1:]]
         elif m in frozenset(
-            {Detect, WorldDetect, YOLOEDetect, Segment, YOLOESegment, Pose, OBB, ImagePoolingAttn, v10Detect}
+            {Detect, Detect_ConvNeXt, Detect_ExtraDW, Detect_IB, WorldDetect, YOLOEDetect, Segment, YOLOESegment, Pose, OBB, ImagePoolingAttn, v10Detect}
         ):
             args.append([ch[x] for x in f])
             if m is Segment or m is YOLOESegment:
                 args[2] = make_divisible(min(args[2], max_channels) * width, 8)
-            if m in {Detect, YOLOEDetect, Segment, YOLOESegment, Pose, OBB}:
+            if m in {Detect, Detect_ConvNeXt, Detect_ExtraDW, Detect_IB, YOLOEDetect, Segment, YOLOESegment, Pose, OBB}:
                 m.legacy = legacy
         elif m is RTDETRDecoder:  # special case, channels arg must be passed in index 1
             args.insert(1, [ch[x] for x in f])
@@ -1906,7 +1909,7 @@ def guess_model_task(model):
                 return "pose"
             elif isinstance(m, OBB):
                 return "obb"
-            elif isinstance(m, (Detect, WorldDetect, YOLOEDetect, v10Detect)):
+            elif isinstance(m, (Detect, WorldDetect, YOLOEDetect, v10Detect, Detect_ConvNeXt, Detect_ExtraDW, Detect_IB)):
                 return "detect"
 
     # Guess from model filename

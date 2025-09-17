@@ -544,12 +544,48 @@ class ConvNeXt(nn.Module):
         self.cv1 = DWConv(c1, c1, 7, act=False)
         self.cv2 = Conv(c1, c_, 1,)
         self.cv3 = Conv(c_, c2, 1, act=False)
-        self.ls = nn.Parameter(torch.full((1, c2, 1, 1), init_layer_scale))
+        # self.ls = nn.Parameter(torch.full((1, c2, 1, 1), init_layer_scale))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Apply convnext"""
-        return x + self.ls * self.cv3(self.cv2(self.cv1(x)))
+        return x + self.cv3(self.cv2(self.cv1(x)))
 
+
+class MobileInvertBottleneck(nn.Module):
+    """Standard Inverted bottleneck"""
+    def __init__(
+        self, c1: int, c2: int, shortcut: bool = True, g: int = 1, k: Tuple[int, int] = (1, 1), e: float = 1.0
+    ):
+        super().__init__()
+        assert c1 == c2, "Cannot assign ConvNeXt with different in/out channels"
+        assert g == 1, "Do not allow grouped convolution"
+        c_ = int(c2 * e)
+        self.cv1 = Conv(c1, c_, 1,)
+        self.cv2 = DWConv(c_, c_, 7,)
+        self.cv3 = Conv(c_, c2, 1, act=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Apply convnext"""
+        return x + self.cv3(self.cv2(self.cv1(x)))
+
+
+class ExtraDepthWise(nn.Module):
+    """mobilenetv4"""
+    def __init__(
+        self, c1: int, c2: int, shortcut: bool = True, g: int = 1, k: Tuple[int, int] = (1, 1), e: float = 1.0
+    ):
+        super().__init__()
+        assert c1 == c2, "Cannot assign ConvNeXt with different in/out channels"
+        assert g == 1, "Do not allow grouped convolution"
+        c_ = int(c2 * e)
+        self.cv1 = DWConv(c1, c1, 3, act=False)
+        self.cv2 = Conv(c1, c_, 1)
+        self.cv3 = DWConv(c_, c_, 7)
+        self.cv4 = Conv(c_, c2, 1, act=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Apply convnext"""
+        return x + self.cv4(self.cv3(self.cv2(self.cv1(x))))
 
 # class StarBlock(nn.Module):
 #     """Basic block from Rewrite the stars"""
@@ -622,41 +658,7 @@ class NativeStarBlock(nn.Module):
         y1, y2 = self.cv2(self.cv1(x)).chunk(2, dim=1)
         return x + self.cv4(self.cv3(self._silu6(y1) * y2))
 
-class MobileInvertBottleneck(nn.Module):
-    """Standard Inverted bottleneck"""
-    def __init__(
-        self, c1: int, c2: int, shortcut: bool = True, g: int = 1, k: Tuple[int, int] = (1, 1), e: float = 1.0
-    ):
-        super().__init__()
-        assert c1 == c2, "Cannot assign ConvNeXt with different in/out channels"
-        assert g == 1, "Do not allow grouped convolution"
-        c_ = int(c2 * e)
-        self.cv1 = Conv(c1, c_, 1,)
-        self.cv2 = DWConv(c_, c_, 7,)
-        self.cv3 = Conv(c_, c2, 1, act=False)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Apply convnext"""
-        return x + self.cv3(self.cv2(self.cv1(x)))
-
-
-class ExtraDepthWise(nn.Module):
-    """mobilenetv4"""
-    def __init__(
-        self, c1: int, c2: int, shortcut: bool = True, g: int = 1, k: Tuple[int, int] = (1, 1), e: float = 1.0
-    ):
-        super().__init__()
-        assert c1 == c2, "Cannot assign ConvNeXt with different in/out channels"
-        assert g == 1, "Do not allow grouped convolution"
-        c_ = int(c2 * e)
-        self.cv1 = DWConv(c1, c1, 3, act=False)
-        self.cv2 = Conv(c1, c_, 1)
-        self.cv3 = DWConv(c_, c_, 3)
-        self.cv4 = Conv(c_, c2, 1, act=False)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Apply convnext"""
-        return x + self.cv4(self.cv3(self.cv2(self.cv1(x))))
 
 class ExtraDepthWise_1(nn.Module):
     """the activation is the same as SnapGen"""
